@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>安装课表</title>
+<meta name="theme-color" content="#1f6feb">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --text: #16181d; --muted: #6b7280;
+    --border: #e5e7eb; --brand: #1f6feb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0d1117; --card: #161b22; --text: #e6edf3; --muted: #8b949e; --border: #30363d; --brand: #58a6ff; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+  }
+  .box { width: 100%; max-width: 420px; text-align: center; }
+  .icon {
+    width: 84px; height: 84px; border-radius: 20px; margin: 0 auto 18px;
+    background: var(--brand); color: #fff; font-size: 44px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px rgba(31, 111, 235, .28);
+  }
+  h1 { font-size: 20px; margin: 0 0 6px; font-weight: 600; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 22px; }
+  button {
+    width: 100%; border: 0; border-radius: 12px; padding: 15px;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    background: var(--brand); color: #fff;
+    font-family: inherit;
+  }
+  button:disabled { opacity: .55; cursor: default; }
+  .ghost {
+    display: block; margin-top: 12px; width: 100%; text-align: center;
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+    border-radius: 12px; padding: 12px; font-size: 14px; text-decoration: none;
+  }
+  .steps {
+    margin-top: 18px; text-align: left; background: var(--card);
+    border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+    font-size: 13px; line-height: 1.9; color: var(--text);
+  }
+  .steps b { color: var(--brand); }
+  .status { margin-top: 14px; font-size: 13px; color: var(--muted); min-height: 20px; }
+  .ok { color: #16a34a; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="icon">课</div>
+  <h1>课表 · 2026-2027-1</h1>
+  <p class="sub">安装后全屏显示，断网也能查看</p>
+
+  <button id="install" disabled>安装到手机</button>
+  <a class="ghost" href="./">先打开看看</a>
+
+  <div class="steps" id="steps" hidden>
+    <b>手动安装</b>：点击 Chrome 右上角 <b>⋮</b> → 选择「<b>添加到主屏幕</b>」或「<b>安装应用</b>」→ 点「安装」。
+  </div>
+
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+  const btn = document.getElementById('install');
+  const steps = document.getElementById('steps');
+  const status = document.getElementById('status');
+  let deferred = null;
+
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferred = event;
+    btn.disabled = false;
+    btn.textContent = '安装到手机';
+    steps.hidden = true;
+  });
+
+  btn.addEventListener('click', async () => {
+    if (!deferred) {
+      steps.hidden = false;
+      return;
+    }
+    deferred.prompt();
+    const { outcome } = await deferred.userChoice;
+    deferred = null;
+    btn.disabled = true;
+    if (outcome === 'accepted') {
+      btn.textContent = '已安装';
+      status.textContent = '已添加到桌面，可以关掉这个页面了';
+      status.className = 'status ok';
+    } else {
+      btn.textContent = '重新安装';
+      btn.disabled = false;
+      status.textContent = '已取消，可再点一次或手动添加';
+    }
+  });
+
+  window.addEventListener('appinstalled', () => {
+    btn.textContent = '已安装';
+    btn.disabled = true;
+    status.textContent = '安装成功，桌面已生成「课表」图标';
+    status.className = 'status ok';
+  });
+
+  // 浏览器未触发安装事件时，直接给出手动步骤
+  setTimeout(() => {
+    if (!deferred) {
+      btn.disabled = false;
+      btn.textContent = '查看安装方法';
+      steps.hidden = false;
+      status.textContent = '当前浏览器不支持一键安装，按下面步骤手动添加';
+    }
+  }, 1500);
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>

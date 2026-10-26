@@ -1,7 +1,8 @@
-const CACHE = 'timetable-v1';
+const CACHE = 'timetable-v2';
 const ASSETS = [
   './',
   './index.html',
+  './install.html',
   './style.css',
   './app.js',
   './data.js',

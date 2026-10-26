@@ -7,6 +7,7 @@ import {
   currentWeek,
   detectConflicts,
   findSlot,
+  initialWeek,
   nextCourse,
   weekdayOf,
 } from './logic.js';
@@ -24,8 +25,8 @@ const setup = document.getElementById('setup');
 const startInput = document.getElementById('startdate');
 const extralist = document.getElementById('extralist');
 
-let week = clampWeek(Number(localStorage.getItem(KEY_WEEK)) || 1);
-let startDate = localStorage.getItem(KEY_START) || '';
+let startDate = localStorage.getItem(KEY_START) || SEMESTER.startDate;
+let week = initialWeek(localStorage.getItem(KEY_WEEK), startDate, new Date(), SEMESTER.totalWeeks);
 
 function clampWeek(value) {
   if (!Number.isFinite(value)) return 1;

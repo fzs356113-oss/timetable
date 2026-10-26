@@ -20,6 +20,15 @@ export function currentWeek(startISO, today, totalWeeks) {
   return Math.min(Math.floor(diff / 7) + 1, totalWeeks);
 }
 
+/** 首次打开时用哪一周：有历史记录用记录，否则按开学日期算当前周 */
+export function initialWeek(storedWeek, startISO, today, totalWeeks) {
+  const stored = Number(storedWeek);
+  if (Number.isFinite(stored) && stored >= 1) {
+    return Math.min(Math.round(stored), totalWeeks);
+  }
+  return currentWeek(startISO, today, totalWeeks) || 1;
+}
+
 /** 取某一周的课程 */
 export function coursesForWeek(courses, week) {
   return courses.filter((c) => c.weeks.includes(week));
